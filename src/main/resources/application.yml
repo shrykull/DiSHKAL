@@ -1,0 +1,10 @@
+---
+management:
+  port: 22443
+
+server:
+  port: 33443
+
+auth:
+  token: replaceMe!
+  accountType: bot
