@@ -8,3 +8,19 @@ server:
 auth:
   token: replaceMe!
   accountType: bot
+
+messageGrabbing:
+  enabled: true
+  grabbers:
+    - grabberName: firstName
+      routes:
+        - source: "#general"
+          destinations:
+            - "#links"
+            - "#links"
+    - grabberName: secondName
+      routes:
+        - source: "#general"
+          destinations:
+            - "#links"
+            - "#links"
