@@ -1,17 +1,14 @@
 package net.shrye.dishkal.config
 
-import org.springframework.boot.context.properties.ConfigurationProperties
-
-//@ConfigurationProperties(prefix = 'routes')
 class MessageGrabberRoute {
     private String source = "#general"
-    private List<String> destinations = new ArrayList<>()
+    private Set<String> destinations = new HashSet<>()
 
     String getSource() {
         return source
     }
 
-    List<String> getDestinations() {
+    Set<String> getDestinations() {
         return destinations
     }
 
@@ -19,7 +16,7 @@ class MessageGrabberRoute {
         this.source = source
     }
 
-    void setDestinations(List<String> destinations) {
+    void setDestinations(Set<String> destinations) {
         this.destinations = destinations
     }
 }

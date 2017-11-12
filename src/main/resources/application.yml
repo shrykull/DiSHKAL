@@ -14,13 +14,9 @@ messageGrabbing:
   grabbers:
     - grabberName: firstName
       routes:
-        - source: "#general"
-          destinations:
-            - "#links"
-            - "#links"
+        - source: general
+          destinations: links, links
     - grabberName: secondName
       routes:
-        - source: "#general"
-          destinations:
-            - "#links"
-            - "#links"
+        - source: general
+          destinations: none

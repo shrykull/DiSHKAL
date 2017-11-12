@@ -24,9 +24,6 @@ class DisHKAL {
 
     @Bean
     JDA jda() {
-        assert auth.token.length() > 10
-        assert messageGrabber.grabbers[0].grabberName != "grabber"
-        assert messageGrabber.grabbers.routes.destinations.size() > 1
         JDA jda = new JDABuilder(auth.accountType).setToken(auth.token).buildAsync()
         jda.addEventListener(new StartupGreeting())
         jda.addEventListener(new LinkGrabber(messageGrabber))
