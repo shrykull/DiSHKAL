@@ -5,6 +5,7 @@ import net.dv8tion.jda.core.entities.Message
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.entities.User
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
+import net.dv8tion.jda.core.requests.RestAction
 import net.shrye.dishkal.config.MessageGrabber
 import net.shrye.dishkal.config.MessageGrabberProperties
 import net.shrye.dishkal.config.MessageGrabberRoute
@@ -12,39 +13,65 @@ import spock.lang.Specification
 
 class LinkGrabberTest extends Specification {
 
-    def "messages from sources are correctly distributed among destinations"() {
-        given:
-        List<MessageGrabberRoute> routes = [new MessageGrabberRoute(source: '#s', destinations: ['#wtf', '#foo', '#wtf'])]
-        List<MessageGrabber> grabbers = [ new MessageGrabber(routes: routes) ]
+    List<MessageGrabberRoute> routes
+    List<MessageGrabber> grabbers
 
-        MessageGrabberProperties messageGrabberProperties = Mock(MessageGrabberProperties) {
+    MessageGrabberProperties messageGrabberProperties
+    TextChannel sourceChannel
+    TextChannel destinationChannel
+    MessageReceivedEvent event
+    String message = 'some matching message'
+    String regex = /.+message/
+
+    LinkGrabber linkGrabber
+
+    def setup() {
+        routes = [new MessageGrabberRoute(source: 's', destinations: ['wtf', 'foo', 'wtf'])]
+        grabbers = [new MessageGrabber(routes: routes, messageRegex: regex)]
+        messageGrabberProperties = Mock(MessageGrabberProperties) {
             getEnabled() >> true
             getGrabbers() >> grabbers
         }
-        TextChannel sourceChannel = Mock(TextChannel) {
-            getName() >> '#s'
+        sourceChannel = Mock(TextChannel) {
+            getName() >> 's'
         }
-        TextChannel destinationChannel = Mock(TextChannel) {
+        destinationChannel = Mock(TextChannel) {
             canTalk() >> true
-            sendMessage(_) >> null
         }
-        MessageReceivedEvent event = Mock(MessageReceivedEvent) {
+        event = Mock(MessageReceivedEvent) {
             getJDA() >> Mock(JDA) {
-                getTextChannelById(_) >> destinationChannel
+                getTextChannelsByName(_ as String, _) >> [destinationChannel]
             }
             getAuthor() >> Mock(User) {
                 getName() >> 'TestUsername'
             }
             getTextChannel() >> sourceChannel
-            getMessage() >> Mock(Message) { getContent() >> 'some message' }
+            getMessage() >> Mock(Message) {
+                getContent() >> "${-> message}"
+                getRawContent() >> "${-> message}"
+            }
         }
 
-        LinkGrabber linkGrabber = new LinkGrabber(messageGrabberProperties)
+        linkGrabber = new LinkGrabber(messageGrabberProperties)
+    }
+
+    def "messages from sources are correctly distributed among destinations"() {
+        when:
+        linkGrabber.onMessageReceived(event)
+
+        then:
+        2 * destinationChannel.sendMessage(_ as String) >> Mock(RestAction)
+    }
+
+    def "only matching messages are forwarded"() {
+        given:
+        message = 'something we don`t care about'
 
         when:
         linkGrabber.onMessageReceived(event)
 
         then:
-        2 * destinationChannel.sendMessage(_)
+        0 * destinationChannel.sendMessage(_)
+
     }
 }

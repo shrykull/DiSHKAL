@@ -30,18 +30,20 @@ class LinkGrabber extends ListenerAdapter {
             return
         }
 
-        messageGrabberProperties.grabbers.routes.flatten().stream()
+        messageGrabberProperties.grabbers.stream()
+            .filter { grabber -> (event.message.rawContent =~ grabber.messageRegex).matches() }
+            .flatMap { grabber -> grabber.routes.stream() }
             .filter { route -> ((MessageGrabberRoute)route).source == event.textChannel.name }
             .each { route ->
                 ((MessageGrabberRoute)route).destinations.each { destination ->
-                    def destinations = event.getJDA().getTextChannelsByName(destination, true)
+                    List<TextChannel> destinations = event.getJDA().getTextChannelsByName(destination, true)
                     if (destinations.empty) {
                         log.info("MessageGrabber Configuration error: destination channel '$destination' not found")
                         return
                     }
                     TextChannel targetChannel = destinations.first()
                     if (targetChannel.canTalk()) {
-                        targetChannel.sendMessage("[${route.source}] ${event.author.name}> ${event.message.content}").complete()
+                        targetChannel.sendMessage("[${route.source}] ${event.author.name}> ${event.message.rawContent}").queue()
                     }
                 }
             }
