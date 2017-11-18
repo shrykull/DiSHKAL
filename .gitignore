@@ -3,3 +3,4 @@
 .idea/
 out/
 docker-compose.yml
+/application.yml
