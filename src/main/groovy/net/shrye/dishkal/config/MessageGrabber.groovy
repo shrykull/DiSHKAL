@@ -2,7 +2,7 @@ package net.shrye.dishkal.config
 
 class MessageGrabber {
     private String grabberName = "grabber"
-    private String messageRegex = /.+(https?:\/\/).+/
+    private String messageRegex = /.*(https?:\/\/).*/
     private List<MessageGrabberRoute> routes = new ArrayList<>()
 
     List<MessageGrabberRoute> getRoutes() {
