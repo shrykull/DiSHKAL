@@ -10,13 +10,21 @@ class DeciderTest extends Specification {
 
         def question = 'etwas'
 
-        expect:
-        Decider.decide(question, identity1) == Decider.decide(question, identity1)
-        Decider.decide(question, identity1) != Decider.decide(question, identity2)
-        Decider.decide(question, identity2) == Decider.decide(question, identity2)
+        def firstDecision = Decider.decide(question, identity1)
+        def secondDecision = Decider.decide(question, identity2)
 
-        "gegen $question" == (Decider.decide(question, identity1)) || "für $question" == (Decider.decide(question, identity1))
-        "gegen $question" == (Decider.decide(question, identity2)) || "für $question" == (Decider.decide(question, identity2))
+        expect:
+        firstDecision == firstDecision
+        firstDecision != secondDecision
+        secondDecision == secondDecision
+
+        "gegen $question" == firstDecision || "für $question" == firstDecision
+        "gegen $question" == secondDecision || "für $question" == secondDecision
+    }
+
+    def "roberts special case"() {
+        expect:
+        ['für a', 'für b'].contains(Decider.decide("a b", "robert3388"))
     }
 
     @Unroll
@@ -24,14 +32,25 @@ class DeciderTest extends Specification {
         def identity1 = '@npx#5201'
         def identity2 = '@someone#123'
 
-        expect:
-        Decider.decide(question, identity1) == Decider.decide(question, identity1)
-        Decider.decide(question, identity1) != Decider.decide(question, identity2)
-        Decider.decide(question, identity2) == Decider.decide(question, identity2)
+        def firstDecision = Decider.decide(question, identity1)
+        def secondDecision = Decider.decide(question, identity2)
 
-        //assert no lists were accidentially toString()ed
-        !Decider.decide(question, identity1).contains('[')
-        !Decider.decide(question, identity2).contains('[')
+        expect:
+        firstDecision == firstDecision
+        firstDecision != secondDecision
+        secondDecision == secondDecision
+
+        and: 'assert no lists were accidentially toString()ed'
+        !firstDecision.contains('[')
+        !secondDecision.contains('[')
+
+        and: 'multiple possible answers should not cause "against"'
+        !firstDecision.contains('gegen')
+        !secondDecision.contains('gegen')
+
+        and: 'result should be trimmed'
+        firstDecision.trim() == firstDecision
+        secondDecision.trim() == secondDecision
 
         where:
         question << [
